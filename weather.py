@@ -21,11 +21,12 @@ while True:
 		# 'M' and 'W' take 6 spaces, rather than 4
 		num_m = display_str.count('M')
 		num_w = display_str.count('W')
+		neg = display_str.count('-')
                 # Each letter takes 4 LEDs to display (including trailing space)
                 # -2 because the degree symbol only takes 2 LEDs
                 # -11 because they are shown before we need to scroll
                 # -1 because there's no trailing space after last letter
-		scroll_len = len(display_str)*4 - 2 - 11 - 1 + 2*(num_m+num_w)
+		scroll_len = len(display_str)*4 - 2 - 11 - 1 + 2*(num_m+num_w) - 1*neg
 
 		s.clear()
 		s.write_string(display_str)
