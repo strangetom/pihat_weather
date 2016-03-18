@@ -3,8 +3,8 @@ import scrollphat as s
 import time as t
 from apikey import api_key
 
-lat = 50.696734
-lng = -1.295813
+lat = 50.781999
+lng = -1.086579
 
 s.set_brightness(2)
 forecast = f.load_forecast(api_key, lat, lng, units='si')
@@ -16,17 +16,22 @@ while True:
 		temp =  str(int(round(current_forecast.d['apparentTemperature'])))
 		temp_str = temp + '\'C '
 		summary = current_forecast.d['summary'].upper()
-		display_str = temp_str + summary
+		hour = t.strftime('%H')
+		minute = t.strftime('%M')
+
+		display_str = hour + ":" + minute + "  " + temp_str + summary
 
 		# 'M' and 'W' take 6 spaces, rather than 4
 		num_m = display_str.count('M')
 		num_w = display_str.count('W')
 		neg = display_str.count('-')
                 # Each letter takes 4 LEDs to display (including trailing space)
-                # -2 because the degree symbol only takes 2 LEDs
+                # -1 because the degree symbol only takes 2 LEDs
+		# -1 because colon symbol only takes 2 LEDs
+		# -2 for each space added to string
                 # -11 because they are shown before we need to scroll
                 # -1 because there's no trailing space after last letter
-		scroll_len = len(display_str)*4 - 2 - 11 - 1 + 2*(num_m+num_w) - 1*neg
+		scroll_len = len(display_str)*4 - 1 - 1 - 4 - 11 - 1 + 2*(num_m+num_w) - 1*neg
 
 		s.clear()
 		s.write_string(display_str)
