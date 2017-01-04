@@ -3,10 +3,11 @@ import scrollphat as s
 import time as t
 from apikey import api_key
 
-lat = 50.781999
-lng = -1.086579
+lat = 53.768983
+lng = -2.764714
 
 s.set_brightness(2)
+s.set_rotate(True)
 forecast = f.load_forecast(api_key, lat, lng, units='si')
 current_forecast = forecast.currently()
 start_time = t.time()
