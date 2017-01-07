@@ -2,7 +2,7 @@ from __future__ import print_function
 import time
 from papirus import Papirus
 import RPi.GPIO as GPIO
-from eink_images import drawImage_forecast, drawImage_sunInfo
+from eink_images import drawImage_forecast, drawImage_sunInfo, drawImage_next2Days
 
 import forecastio as f
 from apikey import api_key
@@ -31,6 +31,7 @@ update_display = ''
 # Set up buttons
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(26, GPIO.IN)
+GPIO.setup(19, GPIO.IN)
 # GPIO 26 is first from left
 # GPIO 19 is second from left
 # GPIO 20 is third from left
@@ -60,6 +61,14 @@ while True:
 
 		if GPIO.input(26) == False:
 			img = drawImage_sunInfo(forecast)
+			papirus.display(img)
+			papirus.update()
+
+			update_display = 'full'
+			secondary_display = time.time()
+
+		if GPIO.input(19) == False:
+			img = drawImage_next2Days(forecast)
 			papirus.display(img)
 			papirus.update()
 
