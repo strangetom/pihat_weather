@@ -1,24 +1,42 @@
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from datetime import datetime
+
+from io import BytesIO
+from matplotlib import pyplot as plt
 
 temperature_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 34)
 text_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', 20)
-small_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 13)
+small_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 14)
 
 def drawImage_forecast(forecast, show_datetime):
+	"""Build image for default display. 
+	The top left corner shows location.
+	The top two-thirds of the display shows the current temperature and weather icon.
+	The bottom third of the display switches between weather summary, and time and date.
 
+	INPUTS
+	--------
+	forecast: 		forecast object 
+					returned from forecastio.load_forecast()
+	show_datetime:	bool
+					determine whether to display datetime (True) or summary (False)
+
+	RETURNS
+	--------
+	image:			PIL.Image
+					image to be displayed on the eink screen
+	"""
+	# Prep data
 	current_forecast = forecast.currently()
 	summary = current_forecast.d['summary']
 	icon = current_forecast.d['icon']
-	temperature = current_forecast.d['temperature']
+	temperature = current_forecast.d['apparentTemperature']
 	now = datetime.today()
-
+	# Set up image
 	image = Image.new('1', (200, 96), 1)
 	draw = ImageDraw.Draw(image)
 	draw.rectangle((0, 0, image.width, image.height), fill=1, outline=1)
-	# Location
+	# Draw lLocation
 	draw.text( (0,0), "Lea, Preston", font=small_font)
 	# Draw temperature
 	draw.text( (16, 20), "{temp}'C".format(temp=round(temperature, 1)), font=temperature_font)
@@ -38,27 +56,51 @@ def drawImage_forecast(forecast, show_datetime):
 	return image
 
 def drawImage_sunInfo(forecast):
+	"""Build image for secondary display: sunrise and sunset information. 
+	Dispays the sunrise and sunset time of the current day
 
+	INPUTS
+	--------
+	forecast: 		forecast object 
+					returned from forecastio.load_forecast()
+
+	RETURNS
+	--------
+	image:			PIL.Image
+					image to be displayed on the eink screen
+	"""
+	# Prep data
 	today = forecast.daily().data[0]
 	sunrise = today.sunriseTime
 	sunset = today.sunsetTime
-
+	# Set up image
 	image = Image.new('1', (200, 96), 1)
 	draw = ImageDraw.Draw(image)
 	draw.rectangle((0, 0, image.width, image.height), fill=1, outline=1)
-
+	# Draw data
 	sunrise_icon = Image.open('./icons/sunrise.bmp')
 	sunset_icon = Image.open('./icons/sunset.bmp')
-	draw.bitmap((0,2), sunrise_icon, fill=0)
-	draw.bitmap((0,51), sunset_icon, fill=0)
-
-	draw.text( (60, 10), "{h:02d}:{m:02d}".format(h=sunrise.hour, m=sunrise.minute), font=text_font)
-	draw.text( (60, 58), "{h:02d}:{m:02d}".format(h=sunset.hour, m=sunset.minute), font=text_font)
-
+	draw.bitmap((40,5), sunrise_icon, fill=0)
+	draw.bitmap((40,54), sunset_icon, fill=0)
+	draw.text( (100, 10), "{h:02d}:{m:02d}".format(h=sunrise.hour, m=sunrise.minute), font=text_font)
+	draw.text( (100, 58), "{h:02d}:{m:02d}".format(h=sunset.hour, m=sunset.minute), font=text_font)
+	
 	return image
 
 def drawImage_next2Days(forecast):
+	"""Build image for secondary display: weather forecast for next 2 days. 
+	Displays the weather forecast (icon, max temperature and min temperature) for the next 2 days.
 
+	INPUTS
+	--------
+	forecast: 		forecast object 
+					returned from forecastio.load_forecast()
+
+	RETURNS
+	--------
+	image:			PIL.Image
+					image to be displayed on the eink screen
+	"""
 	days = forecast.daily()
 
 	# Set up image
@@ -93,5 +135,57 @@ def drawImage_next2Days(forecast):
 	draw.text( (100+x,66), day_2_min_temp, font=small_font)
 	x = int((100 - draw.textsize(day_2_name, font=small_font)[0])/2)
 	draw.text( (100+x,82), day_2_name, font=small_font)	
+
+	return image
+
+def drawImage_tempGraph(forecast):
+	"""Build image for secondary display: graph showing temperature change for next 24 hours. 
+	
+	INPUTS
+	--------
+	forecast: 		forecast object 
+					returned from forecastio.load_forecast()
+
+	RETURNS
+	--------
+	image:			PIL.Image
+					image to be displayed on the eink screen
+	"""
+	hourly = forecast.hourly()
+
+	tempData = []
+	for hour in hourly.data[:20]:
+		tempData.append(hour.d['apparentTemperature'])
+
+	fig,ax = plt.subplots(figsize=(2.4, 1), dpi=100)
+	ax.plot(tempData, lw=2, color='k')
+	ax.set_ylim([int(min(tempData)), int(max(tempData))+1])
+	ax.set_yticklabels([])
+	ax.set_xticklabels([])
+	ax.spines['top'].set_visible(False)
+	ax.spines['right'].set_visible(False)
+	ax.spines['bottom'].set_linewidth(1.25)
+	ax.spines['left'].set_linewidth(1.25)
+	ax.yaxis.set_ticks_position('none')
+	ax.xaxis.set_ticks_position('none')
+	# Save graph to open with PIL
+	buffer_ = BytesIO()
+	fig.savefig(buffer_, format='png')
+	fig.savefig('test.png', format='png')
+
+	buffer_.seek(0)
+
+	# Set up image
+	image = Image.new('1', (200, 96), 1)
+	draw = ImageDraw.Draw(image)
+	draw.rectangle((0, 0, image.width, image.height), fill=1, outline=1)
+	# Draw graph
+	graph = ImageOps.invert(Image.open(buffer_).convert('L'))
+	draw.bitmap((0,4), graph, fill=0)
+	x = draw.textsize(str(int(max(tempData))+1), font=small_font)[0]
+	draw.text((24-x,5), str(int(max(tempData))+1), font=small_font)
+	x = draw.textsize(str(int(min(tempData))), font=small_font)[0]
+	draw.text((24-x,80), str(int(min(tempData))), font=small_font)
+	draw.text((64,0), "Temp ('C)", font=small_font)
 
 	return image
