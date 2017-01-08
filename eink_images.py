@@ -171,7 +171,6 @@ def drawImage_tempGraph(forecast):
 	# Save graph to open with PIL
 	buffer_ = BytesIO()
 	fig.savefig(buffer_, format='png')
-	fig.savefig('test.png', format='png')
 
 	buffer_.seek(0)
 
