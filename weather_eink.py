@@ -50,10 +50,12 @@ while True:
 
 		# Update weather forecast every 5 minutes
 		if (time.time() - weather_update) > 5*60:
-			forecast = f.load_forecast(api_key, lat, lng, units='si')
-
-			print("Weather update: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
-			update_display = 'full'
+			try: # sometimes getting the forecast fails, if it does fail then wait for next time
+				forecast = f.load_forecast(api_key, lat, lng, units='si')
+				print("Weather update: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
+				update_display = 'full'
+			except:
+				pass
 			weather_update = time.time()
 
 		# Draw image
