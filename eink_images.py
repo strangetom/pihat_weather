@@ -154,20 +154,22 @@ def drawImage_tempGraph(forecast):
 	hourly = forecast.hourly()
 
 	tempData = []
-	for hour in hourly.data[:20]:
+	for hour in hourly.data[:24]:
 		tempData.append(hour.d['apparentTemperature'])
 
-	fig,ax = plt.subplots(figsize=(2.4, 1), dpi=100)
+	fig,ax = plt.subplots(figsize=(2.3, 1), dpi=100)
 	ax.plot(tempData, lw=2, color='k')
 	ax.set_ylim([int(min(tempData)), int(max(tempData))+1])
+	ax.set_yticks([int(min(tempData)), int((int(max(tempData))+1)/2), int(max(tempData))+1])
 	ax.set_yticklabels([])
+	ax.set_xticks([0,6,12,18,24])
 	ax.set_xticklabels([])
 	ax.spines['top'].set_visible(False)
 	ax.spines['right'].set_visible(False)
 	ax.spines['bottom'].set_linewidth(1.25)
 	ax.spines['left'].set_linewidth(1.25)
-	ax.yaxis.set_ticks_position('none')
-	ax.xaxis.set_ticks_position('none')
+	ax.yaxis.set_ticks_position('left')
+	ax.xaxis.set_ticks_position('bottom')
 	# Save graph to open with PIL
 	buffer_ = BytesIO()
 	fig.savefig(buffer_, format='png')
@@ -180,11 +182,13 @@ def drawImage_tempGraph(forecast):
 	draw.rectangle((0, 0, image.width, image.height), fill=1, outline=1)
 	# Draw graph
 	graph = ImageOps.invert(Image.open(buffer_).convert('L'))
-	draw.bitmap((0,4), graph, fill=0)
+	draw.bitmap((-8,2), graph, fill=0)
 	x = draw.textsize(str(int(max(tempData))+1), font=small_font)[0]
-	draw.text((24-x,5), str(int(max(tempData))+1), font=small_font)
+	draw.text((17-x,5), str(int(max(tempData))+1), font=small_font)
+	x = draw.textsize(str(int((int(max(tempData))+1)/2)), font=small_font)[0]
+	draw.text((17-x,50), str(int((int(max(tempData))+1)/2)), font=small_font)	
 	x = draw.textsize(str(int(min(tempData))), font=small_font)[0]
-	draw.text((24-x,80), str(int(min(tempData))), font=small_font)
-	draw.text((64,0), "Temp ('C)", font=small_font)
+	draw.text((17-x,80), str(int(min(tempData))), font=small_font)
+	draw.text((36,0), "Temp ('C) 24 hrs", font=small_font)
 
 	return image
