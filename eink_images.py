@@ -37,8 +37,6 @@ def drawImage_forecast(forecast, show_datetime):
 	image = Image.new('1', (200, 96), 1)
 	draw = ImageDraw.Draw(image)
 	draw.rectangle((0, 0, image.width, image.height), fill=1, outline=1)
-	# Draw lLocation
-	draw.text( (0,0), "Lea, Preston", font=small_font)
 	# Draw temperature
 	draw.text( (16, 20), "{temp}'C".format(temp=round(temperature, 1)), font=temperature_font)
 	# Draw icon
@@ -53,6 +51,16 @@ def drawImage_forecast(forecast, show_datetime):
 	else:
 		x_pix = (200 - draw.textsize(summary, font=text_font)[0])/2
 		draw.text((x_pix, 72), summary, fill=0, font=text_font)
+
+	# Draw symbol is weather alert
+	if forecast.alerts() is []:
+		# Draw location
+		draw.text( (0,0), "Lea, Preston", font=small_font)
+	else:
+		# Draw location
+		draw.text( (23,0), "Lea, Preston", font=small_font)
+		alert = Image.open('./icons/Alert.bmp')
+		draw.bitmap( (0,0), alert, fill=0)
 
 	return image
 
@@ -190,5 +198,43 @@ def drawImage_tempGraph(forecast):
 	x = draw.textsize(str(int(min(tempData))), font=small_font)[0]
 	draw.text((17-x,80), str(int(min(tempData))), font=small_font)
 	draw.text((36,0), "Temp ('C) 24 hrs", font=small_font)
+
+	return image
+
+def drawImage_weatherAlert(forecast):
+	"""Build image for secondary display: Information about weather alerts. 
+	
+	INPUTS
+	--------
+	forecast: 		forecast object 
+					returned from forecastio.load_forecast()
+
+	RETURNS
+	--------
+	image:			PIL.Image
+					image to be displayed on the eink screen
+	"""
+	alert = forecast.alerts()[0]
+
+	# Set up image
+	image = Image.new('1', (200, 96), 1)
+	draw = ImageDraw.Draw(image)
+	draw.rectangle((0, 0, image.width, image.height), fill=1, outline=1)
+	
+	if alert is []:
+		# No weather alert
+		draw.text((50, 5), "Alert", font=temperature_font)
+		# No alerts
+		draw.text((34, 50), "No warnings", font=text_font)
+	else:
+		# Weather alert
+		draw.text((50, 5), "Alert", font=temperature_font)
+		# Alert title
+		x = int((200 - draw.textsize(alert.json['title'].split(" for ")[0], font=text_font)[0])/2)
+		draw.text((x, 50), alert.json['title'].split(" for ")[0], font=text_font)
+		# Alert expiry
+		expiry_date = datetime.fromtimestamp(alert.json['expires']).strftime('%A %H:%m')
+		x = int((200 - draw.textsize("Expires: {}".format(expiry_date), font=small_font)[0])/2)
+		draw.text((x, 77), "Expires: {}".format(expiry_date), font=small_font)
 
 	return image
