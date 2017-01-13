@@ -169,8 +169,8 @@ def drawImage_tempGraph(forecast):
 	fig,ax = plt.subplots(figsize=(2.3, 1), dpi=100)
 	ax.plot(tempData, lw=2, color='k')
 	ax.plot([0,24], [0,0], 'k--')
-	ax.set_ylim([floor(min(tempData)), ceil(max(tempData))+1])
-	ax.set_yticks([floor(min(tempData)), ceil(max(tempData))+1])
+	ax.set_ylim([floor(min(tempData)), ceil(max(tempData))])
+	ax.set_yticks([floor(min(tempData)), ceil(max(tempData))])
 	ax.set_yticklabels([])
 	ax.set_xticks([0,6,12,18,24])
 	ax.set_xticklabels([])
@@ -193,10 +193,10 @@ def drawImage_tempGraph(forecast):
 	# Draw graph
 	graph = ImageOps.invert(Image.open(buffer_).convert('L'))
 	draw.bitmap((-8,2), graph, fill=0)
-	x = draw.textsize(str(int(max(tempData))+1), font=small_font)[0]
-	draw.text((17-x,5), str(int(max(tempData))+1), font=small_font)
-	x = draw.textsize(str(int(min(tempData))), font=small_font)[0]
-	draw.text((17-x,80), str(int(min(tempData))), font=small_font)
+	x = draw.textsize(str(int(ceil(max(tempData)))), font=small_font)[0]
+	draw.text((17-x,5), str(int(ceil(max(tempData)))), font=small_font)
+	x = draw.textsize(str(int(floor(min(tempData)))), font=small_font)[0]
+	draw.text((17-x,80), str(int(floor(min(tempData)))), font=small_font)
 	draw.text((36,0), "Temp ('C) 24 hrs", font=small_font)
 
 	return image
