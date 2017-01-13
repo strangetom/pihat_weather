@@ -15,7 +15,7 @@ papirus.clear()
 lat = 53.768983
 lng = -2.764714
 forecast = f.load_forecast(api_key, lat, lng, units='si')
-print("Weather update: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
+print("[INFO] Weather update: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
 show_datetime = True
 
 # Initial image
@@ -52,9 +52,10 @@ while True:
 		if (time.time() - weather_update) > 5*60:
 			try: # sometimes getting the forecast fails, if it does fail then wait for next time
 				forecast = f.load_forecast(api_key, lat, lng, units='si')
-				print("Weather update: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
+				print("[INFO] Weather update: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
 				update_display = 'full'
 			except:
+				print("[WARNING] Weather update failed: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
 				pass
 			weather_update = time.time()
 
