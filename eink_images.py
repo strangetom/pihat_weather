@@ -3,6 +3,7 @@ from datetime import datetime
 
 from io import BytesIO
 from matplotlib import pyplot as plt
+from math import floor, ceil
 
 temperature_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 34)
 text_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', 20)
@@ -159,8 +160,9 @@ def drawImage_tempGraph(forecast):
 
 	fig,ax = plt.subplots(figsize=(2.3, 1), dpi=100)
 	ax.plot(tempData, lw=2, color='k')
-	ax.set_ylim([int(min(tempData)), int(max(tempData))+1])
-	ax.set_yticks([int(min(tempData)), int((int(max(tempData))+1)/2), int(max(tempData))+1])
+	ax.plot([0,24], [0,0], 'k--')
+	ax.set_ylim([floor(min(tempData)), ceil(max(tempData))+1])
+	ax.set_yticks([floor(min(tempData)), ceil(max(tempData))+1])
 	ax.set_yticklabels([])
 	ax.set_xticks([0,6,12,18,24])
 	ax.set_xticklabels([])
@@ -185,8 +187,6 @@ def drawImage_tempGraph(forecast):
 	draw.bitmap((-8,2), graph, fill=0)
 	x = draw.textsize(str(int(max(tempData))+1), font=small_font)[0]
 	draw.text((17-x,5), str(int(max(tempData))+1), font=small_font)
-	x = draw.textsize(str(int((int(max(tempData))+1)/2)), font=small_font)[0]
-	draw.text((17-x,50), str(int((int(max(tempData))+1)/2)), font=small_font)	
 	x = draw.textsize(str(int(min(tempData))), font=small_font)[0]
 	draw.text((17-x,80), str(int(min(tempData))), font=small_font)
 	draw.text((36,0), "Temp ('C) 24 hrs", font=small_font)
