@@ -53,7 +53,7 @@ def drawImage_forecast(forecast, show_datetime):
 		draw.text((x_pix, 72), summary, fill=0, font=text_font)
 
 	# Draw symbol is weather alert
-	if forecast.alerts() is []:
+	if forecast.alerts() == []:
 		# Draw location
 		draw.text( (0,0), "Lea, Preston", font=small_font)
 	else:
@@ -214,14 +214,14 @@ def drawImage_weatherAlert(forecast):
 	image:			PIL.Image
 					image to be displayed on the eink screen
 	"""
-	alert = forecast.alerts()[0]
+	alert = forecast.alerts()
 
 	# Set up image
 	image = Image.new('1', (200, 96), 1)
 	draw = ImageDraw.Draw(image)
 	draw.rectangle((0, 0, image.width, image.height), fill=1, outline=1)
 	
-	if alert is []:
+	if alert == []:
 		# No weather alert
 		draw.text((50, 5), "Alert", font=temperature_font)
 		# No alerts
@@ -230,10 +230,10 @@ def drawImage_weatherAlert(forecast):
 		# Weather alert
 		draw.text((50, 5), "Alert", font=temperature_font)
 		# Alert title
-		x = int((200 - draw.textsize(alert.json['title'].split(" for ")[0], font=text_font)[0])/2)
-		draw.text((x, 50), alert.json['title'].split(" for ")[0], font=text_font)
+		x = int((200 - draw.textsize(alert[0].json['title'].split(" for ")[0], font=text_font)[0])/2)
+		draw.text((x, 50), alert[0].json['title'].split(" for ")[0], font=text_font)
 		# Alert expiry
-		expiry_date = datetime.fromtimestamp(alert.json['expires']).strftime('%A %H:%m')
+		expiry_date = datetime.fromtimestamp(alert[0].json['expires']).strftime('%A %H:%m')
 		x = int((200 - draw.textsize("Expires: {}".format(expiry_date), font=small_font)[0])/2)
 		draw.text((x, 77), "Expires: {}".format(expiry_date), font=small_font)
 
