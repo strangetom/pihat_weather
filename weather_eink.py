@@ -12,28 +12,27 @@ papirus = Papirus()
 papirus.clear()
 
 # Get initial weather forecast
-lat = 53.768983
-lng = -2.764714
+lat = 50.755600
+lng = -1.297771
 forecast = f.load_forecast(api_key, lat, lng, units='si')
 print("[INFO] Weather update: {h:02d}:{m:02d}:{s:02d}".format(h=time.localtime().tm_hour, m=time.localtime().tm_min, s=time.localtime().tm_sec))
-show_datetime = True
 
 # Initial image
-img = drawImage_forecast(forecast, show_datetime)
+img = drawImage_forecast(forecast)
 papirus.display(img)
 papirus.update()
 
 weather_update = time.time()
 display_update = time.time()
-secondary_display = 0
-update_display = ''
+secondary_display = time.time()
+return_to_default = False # Boolean to decide whether to return to default image. Set to True after secondary display shown.
 
 # Set up buttons
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(26, GPIO.IN)
 GPIO.setup(19, GPIO.IN)
 GPIO.setup(20, GPIO.IN)
-GPIO.setup(16, GPIO.IN)
+GPIO.setup(21, GPIO.IN)
 # GPIO 26 is first from left
 # GPIO 19 is second from left
 # GPIO 20 is third from left
@@ -42,13 +41,6 @@ GPIO.setup(16, GPIO.IN)
 
 while True:
 	try:
-
-		# Update display every 10 seconds
-		if (time.time() - display_update) > 10:
-			update_display = 'partial'
-			show_datetime = not show_datetime
-			display_update = time.time()
-
 		# Update weather forecast every 5 minutes
 		if (time.time() - weather_update) > 5*60:
 			try: # sometimes getting the forecast fails, if it does fail then wait for next time
@@ -61,52 +53,46 @@ while True:
 			weather_update = time.time()
 
 		# Draw image
-		img = drawImage_forecast(forecast, show_datetime)
+		img = drawImage_forecast(forecast)
 		papirus.display(img)
-
+		
 		if GPIO.input(26) == False:
 			img = drawImage_sunInfo(forecast)
 			papirus.display(img)
 			papirus.update()
-
-			update_display = 'full'
 			secondary_display = time.time()
-
+			return_to_default = True
+		
 		if GPIO.input(19) == False:
 			img = drawImage_next2Days(forecast)
 			papirus.display(img)
 			papirus.update()
-
-			update_display = 'full'
 			secondary_display = time.time()
-
+			return_to_default = True
+		
 		if GPIO.input(20) == False:
 			img = drawImage_tempGraph(forecast)
 			papirus.display(img)
 			papirus.update()
-
-			update_display = 'full'
 			secondary_display = time.time()
-
-		if GPIO.input(16) == False:
+			return_to_default = True
+		
+		if GPIO.input(21) == False:
 			img = drawImage_weatherAlert(forecast)
 			papirus.display(img)
 			papirus.update()
-
-			update_display = 'full'
 			secondary_display = time.time()
+			return_to_default = True
 
-		# Update display
-		if time.time() - secondary_display > 10:
-			if update_display == 'full':
-				papirus.update()
-				update_display = ''
-			elif update_display == 'partial':
-				papirus.partial_update()
-				update_display = ''
-			else:
-				pass
-
+		# Revert to default display 10 seconds after showing secondary
+		if time.time() - secondary_display > 10 and return_to_default:
+			papirus.update()
+			return_to_default = False
+		
+		# Update default display every 30 seconds
+		if time.time() - display_update > 30:
+			papirus.partial_update()
+			display_update = time.time()
 
 	except KeyboardInterrupt:
 		papirus.clear()

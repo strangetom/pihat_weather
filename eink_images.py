@@ -9,7 +9,7 @@ temperature_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSa
 text_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', 20)
 small_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 14)
 
-def drawImage_forecast(forecast, show_datetime):
+def drawImage_forecast(forecast):
 	"""Build image for default display. 
 	The top left corner shows location.
 	The top two-thirds of the display shows the current temperature and weather icon.
@@ -44,21 +44,17 @@ def drawImage_forecast(forecast, show_datetime):
 	draw.bitmap((image.width - icon.width, 4), icon, fill=0)
 
 	# Draw either summary or date and time
-	if show_datetime:
-		time_date = '{h:02d}:{m:02d} {date}'.format(h=now.hour, m=now.minute, date=now.strftime('%d %b'))
-		x_pix = (200 - draw.textsize(time_date, font=text_font)[0])/2
-		draw.text((x_pix, 72), time_date, fill=0, font=text_font)
-	else:
-		x_pix = (200 - draw.textsize(summary, font=text_font)[0])/2
-		draw.text((x_pix, 72), summary, fill=0, font=text_font)
+	time_date = '{h:02d}:{m:02d} {date}'.format(h=now.hour, m=now.minute, date=now.strftime('%d %b'))
+	x_pix = (200 - draw.textsize(time_date, font=text_font)[0])/2
+	draw.text((x_pix, 72), time_date, fill=0, font=text_font)
 
 	# Draw symbol is weather alert
 	if forecast.alerts() == []:
 		# Draw location
-		draw.text( (0,0), "Lea, Preston", font=small_font)
+		draw.text( (0,0), "Cowes", font=small_font)
 	else:
 		# Draw location
-		draw.text( (23,0), "Lea, Preston", font=small_font)
+		draw.text( (23,0), "Cowes", font=small_font)
 		alert = Image.open('./icons/Alert.bmp')
 		draw.bitmap( (0,0), alert, fill=0)
 
